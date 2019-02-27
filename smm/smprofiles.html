@@ -1,0 +1,305 @@
+<html>
+<head
+<title></title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<script type="text/javascript" src="jquery.min.js"></script>
+<script>
+var images=[
+	["1","u"], // 'image name','up("u" or down "d"')
+	["2d","d"],
+	["3u","u"],
+	["4d","d"],
+	["5d","d"],
+	["6u","u"],
+	["7u","u"],
+	["8d","d"],
+	["9u","u"],
+	["10u","d"],
+	];
+
+augmentImages(images);
+function augmentImages(arrayOfImages) {
+    for (var i=0; i < arrayOfImages.length; i++)
+	{
+        arrayOfImages[i][2] = ''+arrayOfImages[i][0]+'.jpg';
+		new Image().src =  arrayOfImages[i][2];
+		//$('<img/>')[0].src=arrayOfImages[i][0];
+    }
+}
+/*	
+preload(images);
+function preload(arrayOfImages) {
+	for (var i=0; i < arrayOfImages.length; i++)
+	{
+		arrayOfImages[i][2]=new Image().src=arrayOfImages[i][0];
+       // $('<img/>')[0].src = arrayOfImages[i][0];
+        // Alternatively you could use:
+        // (new Image()).src = this;
+    }
+}
+*/
+
+	
+$(document).ready(function(){
+    $("#like").click(function(){
+	  collectStats('l');
+      next();
+    });
+    $("#next").click(function(){
+	  collectStats('n');
+      next();
+    });
+	$('#copyTextareaBtn').hide();
+	$('#results').hide();
+	$('#result_content').hide();
+});
+var t = new Date();
+
+var results=new Array();
+//whichimage,howLongtoClick,like,
+var allUps=0;
+var allDowns=0;
+var totalUpsLiked=0;
+var totalDownsLiked=0;
+//var timing = setTimeout(finishpls, 10000); //10 secs
+/*
+function finishpls(){
+	summaryPage=true;
+}*/
+var totalLength=images.length;
+var summaryPage=false;
+var first=true;
+function collectStats(what){
+	if (counter >0)
+	{
+		var myImage=images[counter-1]; //this is for the image BEFORE this
+		//l or n,image,u or down, time
+		now = new Date();
+		var howLong=now.getTime()-t.getTime();
+		var upOrDown=myImage[1];
+		results[counter-1]= [what,myImage[0],upOrDown,howLong];	
+		if (upOrDown==="u")
+		{
+			allUps+=howLong;
+			if (what=="l")
+			{
+				totalUpsLiked++;
+			}
+		}
+		else if (upOrDown==="d")
+		{
+			allDowns+=howLong;
+			if (what=="l")
+			{
+				totalDownsLiked++;
+			}
+		}
+	}
+		
+}
+
+var counter=0;
+function next()
+{
+	if(counter+1<=images.length)
+	{ 
+		if (first)
+		{
+			$('#slide_cont').show();
+			first=false;
+		}
+			//$('#slideshow_image').attr('src',images[counter][0]);
+		$('#slideshow_image').attr('src',images[counter][2]);
+		
+		
+		counter++;
+		t=new Date();
+	}
+	else
+	{
+		$('#slide_cont').hide();
+		$('#like').hide();
+		$('#next').hide();
+		
+		$('#results').show();
+		$('#result_content').show();
+		$('#copyTextareaBtn').show();
+	
+		var nl="\n";
+		
+		var text="Finished"+nl+nl;
+		for (var i = 0; i < results.length; i++) {
+			var mine=results[i];
+			text+=mine[0]+';'+mine[1]+';'+mine[2]+';'+mine[3]+nl;
+		}
+		var totaltime=((allUps+allDowns)/1000/60).toFixed(2);
+		text+='allUps:'+allUps+' allDowns:'+allDowns+' total time:' +totaltime+' minutes or '+(allUps+allDowns)+'s'  +nl;
+		var netUpsMinusDowns=allUps-allDowns;
+		text+='net ups-downs:'+netUpsMinusDowns+nl;
+		
+		var netTotalUpsLikedMinusTotalDownsliked=totalUpsLiked-totalDownsLiked;
+		text+='totalUpsLiked:'+totalUpsLiked+'totalDownsLiked:'+totalDownsLiked +nl;
+		//$('#result_content').replaceWith(text);
+		
+		var dl=";";
+		
+		var upsOverDowns=allUps/allDowns;
+		var upsPercentage=allUps/(allUps+allDowns);
+		
+		var id=$("#identifier").val();
+		text+="id,allUps;allDowns;upsOverDowns;upsPercentage;netUpsMinusDowns;totalUpsLiked;totalDownsLiked;netTotalUpsLikedMinusTotalDownsliked"+nl;
+		text+=id+dl+allUps+dl+allDowns+dl+upsOverDowns.toFixed(3)+dl+upsPercentage.toFixed(3)+dl+netUpsMinusDowns+dl+totalUpsLiked+dl+totalDownsLiked+dl+netTotalUpsLikedMinusTotalDownsliked+nl;
+		$('#results_content_input').text(text);
+
+	}
+//	});
+}
+
+</script>
+<style>
+#slide_cont
+{
+	padding-top:10px;
+	box-shadow:0px 0px 10px 0px silver;
+	width:840px;
+	height:480px;
+	margin-top:10px;
+}
+#slideshow_image
+{
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	height:90%;
+}
+#prev_image,#next_image
+{
+	width:40px;
+	height:40px;
+}
+#container{
+	align:center;
+}
+
+
+.myInput {
+  //width: 100%;
+  padding: 3px 3px;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+#copyTextareaBtn {
+  background-color: #777777; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+
+#result_content{
+	padding-top: 10px;margin-left: 20px;
+	padding-bottom:10px;
+}
+
+body{
+	font-family:"Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif;
+	font-size:15px;
+}
+
+button { cursor:pointer; }
+</style>
+
+
+</head>
+<body>
+<div id="container">
+<div id="slide_cont" >
+<img src="Intro.jpg" id="slideshow_image"  >
+</div>
+<div style="padding-top: 10px;margin-left: 20px;" id="identifier2">Identifer: <input type="text" id="identifier" class="myInput" name="identifier"/></div>
+<div style="margin-top:2px;margin-left:680px;width:150px;">
+<a href="#" id="like"><img src="like.jpg"/></a>
+<a href="#" id="next"><img src="next.jpg"/></a>
+</div>
+<br>
+</div>
+<div id="results" >
+<div id="result_content" >Thank you, you are now finished! Please leave this screen as is and handover to facilitator.<br/><br/><button id="copyTextareaBtn" onclick="copy();">copy to clipboard</button></div>
+<input type="hidden" id="results_content_input"/>
+</div>
+
+<script>
+
+function copy(){
+var what=$('#results_content_input').text();
+copyTextToClipboard(what);
+}
+
+function copyTextToClipboard(text) {
+  var textArea = document.createElement("textarea");
+
+  //
+  // *** This styling is an extra step which is likely not required. ***
+  //
+  // Why is it here? To ensure:
+  // 1. the element is able to have focus and selection.
+  // 2. if element was to flash render it has minimal visual impact.
+  // 3. less flakyness with selection and copying which **might** occur if
+  //    the textarea element is not visible.
+  //
+  // The likelihood is the element won't even render, not even a flash,
+  // so some of these are just precautions. However in IE the element
+  // is visible whilst the popup box asking the user for permission for
+  // the web page to copy to the clipboard.
+  //
+
+  // Place in top-left corner of screen regardless of scroll position.
+  textArea.style.position = 'fixed';
+  textArea.style.top = 0;
+  textArea.style.left = 0;
+
+  // Ensure it has a small width and height. Setting to 1px / 1em
+  // doesn't work as this gives a negative w/h on some browsers.
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+
+  // We don't need padding, reducing the size if it does flash render.
+  textArea.style.padding = 0;
+
+  // Clean up any borders.
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+
+  // Avoid flash of white box if rendered for any reason.
+  textArea.style.background = 'transparent';
+
+
+  textArea.value = text;
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand('copy');
+    var msg = successful ? 'successful' : 'unsuccessful';
+    console.log('Copying text command was ' + msg);
+  } catch (err) {
+    console.log('Oops, unable to copy');
+	console.log(text);
+  }
+
+  document.body.removeChild(textArea);
+}
+
+
+
+</script>
+</body>
+</html>
