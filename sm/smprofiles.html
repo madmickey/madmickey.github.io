@@ -6,7 +6,6 @@
 <script type="text/javascript" src="jquery.min.js"></script>
 <script>
 var images=[
-
 	["1","u"], // 'image name','up("u" or down "d"')
 	["2d","d"],
 	["3u","u"],
@@ -16,8 +15,31 @@ var images=[
 	["7u","u"],
 	["8d","d"],
 	["9u","u"],
-	["10u","u"],
+	["10u","d"],
 	];
+
+augmentImages(images);
+function augmentImages(arrayOfImages) {
+    for (var i=0; i < arrayOfImages.length; i++)
+	{
+        arrayOfImages[i][2] = ''+arrayOfImages[i][0]+'.jpg';
+		new Image().src =  arrayOfImages[i][2];
+		//$('<img/>')[0].src=arrayOfImages[i][0];
+    }
+}
+/*	
+preload(images);
+function preload(arrayOfImages) {
+	for (var i=0; i < arrayOfImages.length; i++)
+	{
+		arrayOfImages[i][2]=new Image().src=arrayOfImages[i][0];
+       // $('<img/>')[0].src = arrayOfImages[i][0];
+        // Alternatively you could use:
+        // (new Image()).src = this;
+    }
+}
+*/
+
 	
 $(document).ready(function(){
     $("#like").click(function(){
@@ -30,9 +52,10 @@ $(document).ready(function(){
     });
 	$('#copyTextareaBtn').hide();
 	$('#results').hide();
+	$('#result_content').hide();
 });
 var t = new Date();
-var counter=0;
+
 var results=new Array();
 //whichimage,howLongtoClick,like,
 var allUps=0;
@@ -48,57 +71,59 @@ var totalLength=images.length;
 var summaryPage=false;
 var first=true;
 function collectStats(what){
-	//l or n,image,u or down, time
-	now = new Date();
-	var howLong=now.getTime()-t.getTime();
-	var upOrDown=images[counter][1];
-	results[counter]= [what,images[counter][0],upOrDown,howLong];	
-	if (upOrDown==="u")
+	if (counter >0)
 	{
-		allUps+=howLong;
-		if (what=="l")
+		var myImage=images[counter-1]; //this is for the image BEFORE this
+		//l or n,image,u or down, time
+		now = new Date();
+		var howLong=now.getTime()-t.getTime();
+		var upOrDown=myImage[1];
+		results[counter-1]= [what,myImage[0],upOrDown,howLong];	
+		if (upOrDown==="u")
 		{
-			totalUpsLiked++;
+			allUps+=howLong;
+			if (what=="l")
+			{
+				totalUpsLiked++;
+			}
 		}
-	}
-	else if (upOrDown==="d")
-	{
-		allDowns+=howLong;
-		if (what=="l")
+		else if (upOrDown==="d")
 		{
-			totalDownsLiked++;
+			allDowns+=howLong;
+			if (what=="l")
+			{
+				totalDownsLiked++;
+			}
 		}
 	}
 		
 }
 
+var counter=0;
 function next()
 {
-$('#slideshow_image').fadeOut(300,function(){
-	var next_val=counter+1;
-	if(next_val>=totalLength)
-	{
-		summaryPage=true;
-	}
-	if (!summaryPage)
-	{
+	if(counter+1<=images.length)
+	{ 
 		if (first)
 		{
 			$('#slide_cont').show();
+			first=false;
 		}
-		$('#slideshow_image').attr('src',images[counter][0]+'.jpg');
-		$('#slideshow_image').fadeIn(1000);
+			//$('#slideshow_image').attr('src',images[counter][0]);
+		$('#slideshow_image').attr('src',images[counter][2]);
+		
+		
 		counter++;
 		t=new Date();
 	}
 	else
 	{
-	
 		$('#slide_cont').hide();
 		$('#like').hide();
 		$('#next').hide();
 		
 		$('#results').show();
+		$('#result_content').show();
 		$('#copyTextareaBtn').show();
 	
 		var nl="\n";
@@ -108,12 +133,13 @@ $('#slideshow_image').fadeOut(300,function(){
 			var mine=results[i];
 			text+=mine[0]+';'+mine[1]+';'+mine[2]+';'+mine[3]+nl;
 		}
-		text+='allUps:'+allUps+' allDowns:'+allDowns+nl;
+		var totaltime=((allUps+allDowns)/1000/60).toFixed(2);
+		text+='allUps:'+allUps+' allDowns:'+allDowns+' total time:' +totaltime+' minutes or '+(allUps+allDowns)+'s'  +nl;
 		var netUpsMinusDowns=allUps-allDowns;
-		text+='net ups - downs:'+netUpsMinusDowns+nl;
+		text+='net ups-downs:'+netUpsMinusDowns+nl;
 		
 		var netTotalUpsLikedMinusTotalDownsliked=totalUpsLiked-totalDownsLiked;
-		text+=' totalUpsLiked:'+totalUpsLiked+'totalDownsLiked:'+totalDownsLiked +nl;
+		text+='totalUpsLiked:'+totalUpsLiked+'totalDownsLiked:'+totalDownsLiked +nl;
 		//$('#result_content').replaceWith(text);
 		
 		var dl=";";
@@ -122,45 +148,70 @@ $('#slideshow_image').fadeOut(300,function(){
 		var upsPercentage=allUps/(allUps+allDowns);
 		
 		var id=$("#identifier").val();
-		//var id="re";
 		text+="id,allUps;allDowns;upsOverDowns;upsPercentage;netUpsMinusDowns;totalUpsLiked;totalDownsLiked;netTotalUpsLikedMinusTotalDownsliked"+nl;
 		text+=id+dl+allUps+dl+allDowns+dl+upsOverDowns.toFixed(3)+dl+upsPercentage.toFixed(3)+dl+netUpsMinusDowns+dl+totalUpsLiked+dl+totalDownsLiked+dl+netTotalUpsLikedMinusTotalDownsliked+nl;
-		
-		
 		$('#results_content_input').text(text);
-		//alert($('#results_content_input').text());
-		//copyTextToClipboard(text);
-		//console.log(text);
-		//console.log('allUps'+allUps+' allDowns'+allDowns);
-		//var temp=allUps-allDowns;
-		//console.log(' net ups minus downs'+temp);
-		//console.log('totalDownsLiked'+totalDownsLiked+' totalUpsLiked'+totalUpsLiked );
-		//$('#results').toggle();
+
 	}
-	});
+//	});
 }
 
 </script>
 <style>
 #slide_cont
 {
-box-shadow:0px 0px 10px 0px silver;
-width:640px;
-height:480px;
-margin-top:10px;
+	padding-top:10px;
+	box-shadow:0px 0px 10px 0px silver;
+	width:840px;
+	height:480px;
+	margin-top:10px;
 }
 #slideshow_image
 {
-height:90%;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	height:90%;
 }
 #prev_image,#next_image
 {
-width:40px;
-height:40px;
+	width:40px;
+	height:40px;
 }
 #container{
-align:center;
+	align:center;
 }
+
+
+.myInput {
+  //width: 100%;
+  padding: 3px 3px;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+#copyTextareaBtn {
+  background-color: #777777; /* Green */
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+
+#result_content{
+	padding-top: 10px;margin-left: 20px;
+	padding-bottom:10px;
+}
+
+body{
+	font-family:"Helvetica Neue", HelveticaNeue, Helvetica, Arial, sans-serif;
+	font-size:15px;
+}
+
+button { cursor:pointer; }
 </style>
 
 
@@ -168,17 +219,17 @@ align:center;
 <body>
 <div id="container">
 <div id="slide_cont" >
-<img src="Intro.jpg" id="slideshow_image" >
+<img src="Intro.jpg" id="slideshow_image"  >
 </div>
-<div style="padding-top: 10px;margin-left: 20px;">Identifer:<input type="text" id="identifier"/></div>
-<div style="margin-top:2px;margin-left:480px;width:150px;">
+<div style="padding-top: 10px;margin-left: 20px;" id="identifier2">Identifer: <input type="text" id="identifier" class="myInput" name="identifier"/></div>
+<div style="margin-top:2px;margin-left:680px;width:150px;">
 <a href="#" id="like"><img src="like.jpg"/></a>
 <a href="#" id="next"><img src="next.jpg"/></a>
 </div>
 <br>
 </div>
 <div id="results" >
-<div id="result_content" >Finished! Please handover to facilitator<br/><button id="copyTextareaBtn" onclick="copy();">copy to clipboard</button></div>
+<div id="result_content" >Thank you, you are now finished! Please leave this screen as is and handover to facilitator.<br/><br/><button id="copyTextareaBtn" onclick="copy();">copy to clipboard</button></div>
 <input type="hidden" id="results_content_input"/>
 </div>
 
@@ -241,27 +292,13 @@ function copyTextToClipboard(text) {
     console.log('Copying text command was ' + msg);
   } catch (err) {
     console.log('Oops, unable to copy');
+	console.log(text);
   }
 
   document.body.removeChild(textArea);
 }
 
-/*
-var copyTextareaBtn=document.getElementById('copyTextareaBtn');
-copyTextareaBtn.addEventListener('click', function(event) {
-  var copyTextarea = document.getElementById('results_content_input');
-  copyTextarea.focus();
-  copyTextarea.select();
-	
-  try {
-    var successful = document.execCommand('copy');
-    var msg = successful ? 'successful' : 'unsuccessful';
-    console.log('Copying text command was ' + msg);
-  } catch (err) {
-    console.log('Oops, unable to copy');
-  }
-});
-*/
+
 
 </script>
 </body>
